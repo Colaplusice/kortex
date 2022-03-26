@@ -234,12 +234,12 @@ def main():
         success = True
 
         success &= example_move_to_home_position(base)
-        success &= example_cartesian_action_movement(base, base_cyclic)
-        success &= example_angular_action_movement(base)
+        # success &= example_cartesian_action_movement(base, base_cyclic)
+        # success &= example_angular_action_movement(base)
 
-        success &= example_move_to_home_position(base)
-        success &= example_cartesian_trajectory_movement(base, base_cyclic)
-        success &= example_angular_trajectory_movement(base)
+        # success &= example_move_to_home_position(base)
+        # success &= example_cartesian_trajectory_movement(base, base_cyclic)
+        # success &= example_angular_trajectory_movement(base)
 
         return 0 if success else 1
 

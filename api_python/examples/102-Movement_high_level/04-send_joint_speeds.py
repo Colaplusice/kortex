@@ -27,7 +27,7 @@ from kortex_api.autogen.messages import Session_pb2, Base_pb2, Common_pb2
 TIMEOUT_DURATION = 20
 
 # Actuator speed (deg/s)
-SPEED = 0.10
+SPEED = 0.5
 
 
 # Create closure to set an event after an END or an ABORT
@@ -50,6 +50,7 @@ def check_for_end_or_abort(e):
 
 
 def example_move_to_start_position(base):
+    print("enter the function")
     # Make sure the arm is in Single Level Servoing mode
     base_servo_mode = Base_pb2.ServoingModeInformation()
     base_servo_mode.servoing_mode = Base_pb2.SINGLE_LEVEL_SERVOING
@@ -57,14 +58,21 @@ def example_move_to_start_position(base):
 
     # Move arm to ready position
     constrained_joint_angles = Base_pb2.ConstrainedJointAngles()
+    print(type(constrained_joint_angles),'this is the type of joint angles')
+    print('this is the constraints angles',constrained_joint_angles.joint_angles.joint_angles)
+    print('this is the constraints angles',constrained_joint_angles.constraints)
+
 
     actuator_count = base.GetActuatorCount().count
     print('this is actuator count', actuator_count)
-    angles = [0.0] * actuator_count
-
+    angles = [0.5] * actuator_count
+    
     # Actuator 4 at 90 degrees
     for joint_id in range(len(angles)):
         joint_angle = constrained_joint_angles.joint_angles.joint_angles.add()
+        print('this is the type ',type(joint_angle))
+        print('this is the joint angle',joint_angle.value)
+        # the index of joints
         joint_angle.joint_identifier = joint_id
         joint_angle.value = angles[joint_id]
 
@@ -147,7 +155,7 @@ def main():
         # Example core
         success = True
         success &= example_move_to_start_position(base)
-        success &= example_send_joint_speeds(base)
+        # success &= example_send_joint_speeds(base)
 
         return 0 if success else 1
 
