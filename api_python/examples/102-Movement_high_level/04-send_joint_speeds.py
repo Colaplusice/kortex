@@ -27,7 +27,7 @@ from kortex_api.autogen.messages import Session_pb2, Base_pb2, Common_pb2
 TIMEOUT_DURATION = 20
 
 # Actuator speed (deg/s)
-SPEED = 0.5
+SPEED = 10
 
 
 # Create closure to set an event after an END or an ABORT
@@ -60,12 +60,12 @@ def example_move_to_start_position(base):
     constrained_joint_angles = Base_pb2.ConstrainedJointAngles()
     print(type(constrained_joint_angles),'this is the type of joint angles')
     print('this is the constraints angles',constrained_joint_angles.joint_angles.joint_angles)
-    print('this is the constraints angles',constrained_joint_angles.constraints)
+    print('this is the constraints angles',constrained_joint_angles.constraint)
 
 
     actuator_count = base.GetActuatorCount().count
     print('this is actuator count', actuator_count)
-    angles = [0.5] * actuator_count
+    angles = [10] * actuator_count
     
     # Actuator 4 at 90 degrees
     for joint_id in range(len(angles)):
@@ -95,6 +95,20 @@ def example_move_to_start_position(base):
         print("Timeout on action notification wait")
     return finished
 
+def example_get_joint_angle(base):
+    print("Getting Angles for every joint...")
+    print("Joint ID : Joint Angle")
+    input_joint_angles = base.GetMeasuredJointAngles()
+    for joint_angle in input_joint_angles.joint_angles:
+        print(joint_angle.joint_identifier, " : ", joint_angle.value)
+    joint_vel=base.GetActuatorCount()
+    print(joint_vel)
+    print(base.GetAllJointsSpeedHardLimitation())
+    print(base.GetMeasuredCartesianPose())
+    print(base.GetArmState())
+    # print("Computing Foward Kinematics using joint angles...")
+    # print(pose)
+
 
 def example_send_joint_speeds(base):
     joint_speeds = Base_pb2.JointSpeeds()
@@ -102,37 +116,24 @@ def example_send_joint_speeds(base):
     actuator_count = base.GetActuatorCount().count
     # The 7DOF robot will spin in the same direction for 10 seconds
     if actuator_count == 7:
-        speeds = [SPEED, 0, -SPEED, 0, SPEED, 0, -SPEED]
-        i = 0
-        for speed in speeds:
-            joint_speed = joint_speeds.joint_speeds.add()
-            joint_speed.joint_identifier = i
-            joint_speed.value = speed
-            joint_speed.duration = 0
-            i = i + 1
-        print("Sending the joint speeds for 10 seconds...")
-        base.SendJointSpeedsCommand(joint_speeds)
-        time.sleep(10)
-    # The 6 DOF robot will alternate between 4 spins, each for 2.5 seconds
-    if actuator_count == 6:
-        print("Sending the joint speeds for 10 seconds...")
-        for times in range(4):
-            del joint_speeds.joint_speeds[:]
-            if times % 2:
-                speeds = [-SPEED, 0.0, 0.0, SPEED, 0.0, 0.0]
-            else:
-                speeds = [SPEED, 0.0, 0.0, -SPEED, 0.0, 0.0]
+        ss = [SPEED, 0, -SPEED, 0, SPEED, 0, -SPEED]
+        speedss=[ss]*1000
+        before=time.time()
+        for j in range(len(speedss)):
+            speeds=speedss[j]
             i = 0
+            joint_speeds = Base_pb2.JointSpeeds()
             for speed in speeds:
                 joint_speed = joint_speeds.joint_speeds.add()
                 joint_speed.joint_identifier = i
                 joint_speed.value = speed
                 joint_speed.duration = 0
                 i = i + 1
-
+            # print("Sending the joint speeds for 10 seconds...")
             base.SendJointSpeedsCommand(joint_speeds)
-            time.sleep(2.5)
-
+        end=time.time()
+        print('run 1000 commend spend ',end-before)
+        # time.sleep(3)
     print("Stopping the robot")
     base.Stop()
 
@@ -154,9 +155,9 @@ def main():
 
         # Example core
         success = True
-        success &= example_move_to_start_position(base)
+        # success &= example_move_to_start_position(base)
         # success &= example_send_joint_speeds(base)
-
+        example_get_joint_angle(base)
         return 0 if success else 1
 
 
